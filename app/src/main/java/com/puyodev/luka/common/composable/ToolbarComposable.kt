@@ -44,13 +44,19 @@ fun ActionToolbar(
   title: String,
   //@DrawableRes endActionIcon: Int,
   modifier: Modifier,
+  containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
+  contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
   endAction: () -> Unit,
   onMenuClick: () -> Unit
 ) {
   TopAppBar(
-    modifier = Modifier
-      .shadow(elevation = 5.dp)
-      .background(Color.Gray),
+    modifier = modifier.shadow(elevation = 5.dp),
+    colors = TopAppBarDefaults.topAppBarColors(
+      containerColor = containerColor,
+      titleContentColor = contentColor,
+      navigationIconContentColor = contentColor,
+      actionIconContentColor = contentColor
+    ),
     navigationIcon = {
       IconButton(onClick = onMenuClick) {
         Icon(imageVector = Icons.Rounded.Menu, contentDescription = "Menu")

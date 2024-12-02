@@ -3,24 +3,36 @@ package com.puyodev.luka.screens.pay
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,7 +81,15 @@ fun PayScreenContent(
     var valor by remember { mutableIntStateOf(1) } // Estado del contador
     val drawerState = rememberDrawerState(DrawerValue.Closed) // Estado para abrir/cerrar el drawer
     val scope = rememberCoroutineScope() // Alcance de la corrutina para manejar el drawer
+    val isDarkTheme = isSystemInDarkTheme()
 
+    // Estado para animar la escala
+    var animateScaleTrigger by remember { mutableStateOf(false) } // Disparador de escala
+    val scale by animateFloatAsState(
+        targetValue = if (animateScaleTrigger) 1.2f else 1f, // Escala animada
+        animationSpec = tween(durationMillis = 300), // Duración de la animación
+        finishedListener = { animateScaleTrigger = false } // Reinicia el disparador
+    )
 
     ModalNavigationDrawer(
             drawerState = drawerState, // Controla si el drawer está abierto o cerrado
@@ -87,10 +107,11 @@ fun PayScreenContent(
             Scaffold(
                 topBar = {
                     ActionToolbar(
-                        title = user.username,  // Muestra el nombre de usuario
+                        title = user.username, // Muestra el nombre de usuario
                         modifier = Modifier.toolbarActions(),
-                        //endActionIcon = AppIcon.ic_settings,
-                        endAction = { onProfileClick(openScreen)},
+                        containerColor = MaterialTheme.colorScheme.primaryContainer, // Fondo de la barra
+                        contentColor = MaterialTheme.colorScheme.inversePrimary, // Color de texto e iconos
+                        endAction = { onProfileClick(openScreen) },
                         onMenuClick = {
                             scope.launch { drawerState.open() } // Abre el drawer al hacer clic en el menú
                         }
@@ -103,6 +124,7 @@ fun PayScreenContent(
                         .fillMaxSize()
                         .padding(innerPadding)
                 ) {
+                    Spacer(modifier = Modifier.height(18.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -176,20 +198,36 @@ fun PayScreenContent(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically // Centra verticalmente el contenido del Row
                         ) {
-                            IconButton(onClick = {
-                                if (valor > 1) valor-- // Resta 1 si valor es mayor que 0 - límite 1
-                            }) {
-                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Minus")
+                            IconButton(
+                                onClick = {
+                                    if (valor > 1) {
+                                        valor--
+                                        animateScaleTrigger = true // Dispara la animación de escala
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Decrementar")
                             }
-                            Text(text = "$valor", fontSize = 100.sp)
+                            Text(
+                                text = "$valor",
+                                fontSize = 100.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.scale(scale) // Aplica escala animada
+                            )
 
-                            IconButton(onClick = {
-                                if (valor < 10) valor++ // Suma 1 si valor es menor a 10 - límite 10
-                            }) {
-                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Plus")
+                            IconButton(
+                                onClick = {
+                                    if (valor < 10) {
+                                        valor++
+                                        animateScaleTrigger = true // Dispara la animación de escala
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Incrementar")
                             }
                         }
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     // LazyVerticalGrid con GridCells.Adaptive para ajustar el tamaño de las imágenes
                     LazyVerticalGrid(
@@ -198,18 +236,26 @@ fun PayScreenContent(
                             .fillMaxWidth()
                             .padding(16.dp),
                         contentPadding = PaddingValues(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(valor) { // Repite la imagen tantas veces como el valor
-                            Image(
-                                painter = painterResource(id = R.drawable.person),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .aspectRatio(1f) // Mantiene el aspecto cuadrado
-                                    .clip(RoundedCornerShape(8.dp)) // Opcional: redondear las esquinas
-                                    .border(1.dp, Color.Gray) // Opcional: agregar un borde
-                            )
+                        items(valor) { index ->
+                            AnimatedVisibility(
+                                visible = index < valor,
+                                enter = fadeIn(animationSpec = tween(500)), // Animación de entrada
+                                exit = fadeOut(animationSpec = tween(500)) // Animación de salida
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.person),
+                                    contentDescription = null,
+                                    colorFilter = if (isDarkTheme) ColorFilter.tint(Color.LightGray) else null,
+
+                                    modifier = Modifier
+                                        .size(80.dp)
+                                        .clip(CircleShape)
+                                        .border(1.dp, Color.Gray, CircleShape)
+                                )
+                            }
                         }
                     }
 
@@ -231,7 +277,7 @@ fun PayScreenContent(
                                         )
                                     },
                                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.inversePrimary,
                                     icon = {
                                         Icon(
                                             Icons.Default.KeyboardArrowUp,
@@ -283,6 +329,7 @@ fun ErrorMessage(message: String) {
 
 @Composable
 fun CustomBottomBar() {
+    val isDarkTheme = isSystemInDarkTheme()
     BottomAppBar(
         modifier = Modifier
             .shadow(elevation = 10.dp)
@@ -321,6 +368,7 @@ fun CustomBottomBar() {
                     Image(
                         painter = painterResource(id = R.drawable.located),
                         contentDescription = null,
+                        colorFilter = if (isDarkTheme) ColorFilter.tint(Color.LightGray) else null,
                         modifier = Modifier
                             .size(80.dp) // Tamaño personalizado para la imagen centrada
                     )

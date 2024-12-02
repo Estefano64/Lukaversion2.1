@@ -175,6 +175,8 @@ fun PaymentGatewayScreenContent(
                     title = "Recargar Saldo",
                     modifier = Modifier.toolbarActions(),
                     endAction = { onProfileClick(openScreen)},
+                    containerColor = MaterialTheme.colorScheme.primaryContainer, // Fondo de la barra
+                    contentColor = MaterialTheme.colorScheme.inversePrimary, // Color de texto e iconos
                     onMenuClick = {
                         scope.launch { drawerState.open() }
                     }
@@ -395,7 +397,7 @@ private fun PresetAmountButton(
         ),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = if (selectedAmount == amount)
-                MaterialTheme.colorScheme.primaryContainer
+                MaterialTheme.colorScheme.inversePrimary
             else MaterialTheme.colorScheme.surface
         )
     ) {

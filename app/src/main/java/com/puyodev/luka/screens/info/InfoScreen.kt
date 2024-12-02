@@ -71,6 +71,8 @@ fun InfoScreenContent(
                     title = "Acerca de Luka",
                     modifier = Modifier.toolbarActions(),
                     endAction = { onProfileClick(openScreen) },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer, // Fondo de la barra
+                    contentColor = MaterialTheme.colorScheme.inversePrimary, // Color de texto e iconos
                     onMenuClick = {
                         scope.launch { drawerState.open() }
                     }

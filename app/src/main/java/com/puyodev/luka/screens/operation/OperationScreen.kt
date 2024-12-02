@@ -74,6 +74,8 @@ fun OperationsScreenContent(
                     modifier = Modifier.toolbarActions(),
                     //endActionIcon = AppIcon.ic_settings,
                     endAction = { onProfileClick(openScreen) },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer, // Fondo de la barra
+                    contentColor = MaterialTheme.colorScheme.inversePrimary, // Color de texto e iconos
                     onMenuClick = {
                         scope.launch { drawerState.open() } // Abre el drawer al hacer clic en el menú
                     }
