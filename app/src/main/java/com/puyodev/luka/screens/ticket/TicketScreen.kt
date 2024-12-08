@@ -28,8 +28,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.location.LocationServices
 import com.puyodev.luka.R
 import com.puyodev.luka.model.User
+import com.puyodev.luka.screens.pay.openGoogleMapsWithCurrentLocation
 //import com.example.makeitso.model.Task
 import com.puyodev.luka.ui.theme.LukaTheme
 import nl.dionsegijn.konfetti.compose.KonfettiView
@@ -104,7 +106,10 @@ fun TicketScreenContent(
     openScreen: (String) -> Unit
 
 ) {
-    val fecha = "12/11/2024"
+
+    val context = LocalContext.current
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    val fecha = "02/12/2024"
 
     Column(
         modifier = Modifier
@@ -146,7 +151,9 @@ fun TicketScreenContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center // Centra el Box en la pantalla
                 ) {
-                    Text(text = fecha)
+                    Text(text = fecha,
+                        color = Color.DarkGray
+                    )
                 }
                 Row(
                     modifier = Modifier
@@ -164,7 +171,9 @@ fun TicketScreenContent(
                             modifier = Modifier
                                 .size(160.dp) // Tamaño personalizado para la imagen centrada
                         )
-                        Text(text = "Bus 101")
+                        Text(text = "Bus 101",
+                            color = Color.DarkGray
+                        )
                     }
                     Column(
                         modifier = Modifier.padding(10.dp),
@@ -180,7 +189,9 @@ fun TicketScreenContent(
                         ) {
                             Text(
                                 text = "Pago:\nS/$valor",
-                                textAlign = TextAlign.Center
+                                textAlign = TextAlign.Center,
+                                color = Color.DarkGray
+
                             )
                         }
                         HorizontalDivider(modifier = Modifier.fillMaxWidth())
@@ -194,7 +205,8 @@ fun TicketScreenContent(
                             Text(
                                 text = "Paradero:\n$direccion",
                                 textAlign = TextAlign.Center,
-                                fontSize = 15.sp
+                                fontSize = 15.sp,
+                                color = Color.DarkGray
                             )
                         }
                     }
@@ -243,7 +255,7 @@ fun TicketScreenContent(
                 )
             }
             SmallFloatingActionButton(
-                onClick = { onPayScreenClick(openScreen) },
+                onClick = { openGoogleMapsWithCurrentLocation(fusedLocationClient, context) },
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 contentColor = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.shadow(

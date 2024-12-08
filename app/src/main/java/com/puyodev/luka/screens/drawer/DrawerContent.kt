@@ -87,7 +87,7 @@ fun DrawerHeader(user: String) {
             text = user,
             textAlign = TextAlign.Center,
             //style = MaterialTheme.typography.bodyLarge,
-            //color = MaterialTheme.colorScheme.onPrimary,
+            color = MaterialTheme.colorScheme.inversePrimary,
         )
     }
 }

@@ -77,6 +77,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.play.services.location)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -163,6 +164,7 @@ dependencies {
     // Lifecycle
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
-    // Agregamos explícitamente la dependencia de Cardinal
-
+    // Agregar explícitamente la dependencia de Google Play Services para la ubicación
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.android.gms:play-services-location:19.0.1")
 }

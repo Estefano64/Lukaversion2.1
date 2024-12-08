@@ -43,11 +43,13 @@ import com.puyodev.luka.ui.theme.LukaTheme
 //import com.google.accompanist.permissions.rememberPermissionState
 //import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.coroutines.CoroutineScope
+import androidx.compose.runtime.MutableState
+
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun LukaApp() {
+fun LukaApp(locationText: MutableState<String>) {
     LukaTheme {
         /*Para solicitar permiso de notificaciones
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

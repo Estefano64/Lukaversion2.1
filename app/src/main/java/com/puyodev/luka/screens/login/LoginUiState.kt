@@ -17,6 +17,6 @@ limitations under the License.
 package com.puyodev.luka.screens.login
 
 data class LoginUiState(
-    val email: String = "",
-    val password: String = ""
+    val email: String = "frisk7530@gmail.com",
+    val password: String = "Alaska7530"
 )

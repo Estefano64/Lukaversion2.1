@@ -21,6 +21,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -33,6 +34,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.location.LocationServices
 import com.puyodev.luka.R
 import com.puyodev.luka.screens.drawer.DrawerHeader
 import com.puyodev.luka.screens.drawer.DrawerScreen
@@ -41,6 +43,7 @@ import com.puyodev.luka.common.ext.toolbarActions
 import com.puyodev.luka.model.User
 import com.puyodev.luka.screens.PaymentGateway.PaymentGatewayViewModel.Companion.LUKITA_TO_USD_RATE
 import com.puyodev.luka.screens.operation.OperationsViewModel
+import com.puyodev.luka.screens.pay.openGoogleMapsWithCurrentLocation
 import kotlinx.coroutines.launch
 
 
@@ -155,7 +158,8 @@ fun PaymentGatewayScreenContent(
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val paymentStatus by viewModel.paymentStatus.collectAsState()
-
+    val context = LocalContext.current
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -174,6 +178,7 @@ fun PaymentGatewayScreenContent(
                 ActionToolbar(
                     title = "Recargar Saldo",
                     modifier = Modifier.toolbarActions(),
+                    startAction = { openGoogleMapsWithCurrentLocation(fusedLocationClient, context) },
                     endAction = { onProfileClick(openScreen)},
                     containerColor = MaterialTheme.colorScheme.primaryContainer, // Fondo de la barra
                     contentColor = MaterialTheme.colorScheme.inversePrimary, // Color de texto e iconos

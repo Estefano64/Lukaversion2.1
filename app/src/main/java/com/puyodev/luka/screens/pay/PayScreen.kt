@@ -1,7 +1,17 @@
 package com.puyodev.luka.screens.pay
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.Location
+import android.net.Uri
 import android.os.Build
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -31,13 +41,17 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.puyodev.luka.R
 import com.puyodev.luka.common.composable.ActionToolbar
 import com.puyodev.luka.common.ext.toolbarActions
@@ -47,7 +61,32 @@ import com.puyodev.luka.screens.drawer.DrawerScreen
 import kotlinx.coroutines.delay
 //import com.example.makeitso.model.Task
 import kotlinx.coroutines.launch
+import java.util.Locale
 import kotlin.reflect.KFunction3
+
+fun openGoogleMapsWithCurrentLocation(
+    fusedLocationClient: FusedLocationProviderClient,
+    context: Context
+) {
+    try {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            if (location != null) {
+                val latitude = location.latitude
+                val longitude = location.longitude
+                val geoUri = "geo:$latitude,$longitude?q=$latitude,$longitude"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(geoUri))
+                intent.setPackage("com.google.android.apps.maps")
+                context.startActivity(intent)
+            } else {
+                Log.e("Location", "Ubicación no disponible")
+            }
+        }.addOnFailureListener { exception ->
+            Log.e("Location", "Error obteniendo la ubicación: ${exception.message}")
+        }
+    } catch (e: SecurityException) {
+        Log.e("Location", "No se tienen los permisos necesarios para obtener la ubicación")
+    }
+}
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -58,13 +97,17 @@ fun PayScreen(
     // Observa un único objeto User en lugar de una lista
     val user by viewModel.user.collectAsStateWithLifecycle(initialValue = User())
     val nfcStatus by viewModel.nfcStatus.collectAsState() // Añadido el estado NFC
+    val locationText = remember { mutableStateOf("Ubicación no disponible") }
+
     PayScreenContent(
         user = user,
         onProfileClick = viewModel::onProfileClick,
         onTicketClick = viewModel::onTicketClick,
         onProfilePaymentGatewayClick = viewModel::onProfilePaymentGatewayClick,
         openScreen = openScreen,
-        nfcStatus = nfcStatus
+        nfcStatus = nfcStatus,
+        locationText = locationText
+
     )
 }
 
@@ -76,12 +119,30 @@ fun PayScreenContent(
     onProfilePaymentGatewayClick: ((String) -> Unit) -> Unit,
     onTicketClick: KFunction3<(String) -> Unit, Int, String, Unit>,
     openScreen: (String) -> Unit,
-    nfcStatus: PayViewModel.NFCStatus
+    nfcStatus: PayViewModel.NFCStatus,
+    locationText: MutableState<String>
 ) {
     var valor by remember { mutableIntStateOf(1) } // Estado del contador
     val drawerState = rememberDrawerState(DrawerValue.Closed) // Estado para abrir/cerrar el drawer
     val scope = rememberCoroutineScope() // Alcance de la corrutina para manejar el drawer
     val isDarkTheme = isSystemInDarkTheme()
+    val context = LocalContext.current
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            openGoogleMapsWithCurrentLocation(fusedLocationClient, context)
+        }
+    }
+
+    fun checkLocationPermission(context: Context): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
 
     // Estado para animar la escala
     var animateScaleTrigger by remember { mutableStateOf(false) } // Disparador de escala
@@ -111,20 +172,21 @@ fun PayScreenContent(
                         modifier = Modifier.toolbarActions(),
                         containerColor = MaterialTheme.colorScheme.primaryContainer, // Fondo de la barra
                         contentColor = MaterialTheme.colorScheme.inversePrimary, // Color de texto e iconos
+                        startAction = { openGoogleMapsWithCurrentLocation(fusedLocationClient, context) },
                         endAction = { onProfileClick(openScreen) },
                         onMenuClick = {
                             scope.launch { drawerState.open() } // Abre el drawer al hacer clic en el menú
                         }
                     )
                 },
-                bottomBar = { CustomBottomBar() }, // Agregar la barra inferior aquí
-            ) { innerPadding ->
+                bottomBar = { CustomBottomBar(locationText = locationText) },
+                ) { innerPadding ->
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding)
                 ) {
-                    Spacer(modifier = Modifier.height(18.dp))
+                    Spacer(modifier = Modifier.height(30.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -236,7 +298,7 @@ fun PayScreenContent(
                             .fillMaxWidth()
                             .padding(16.dp),
                         contentPadding = PaddingValues(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(valor) { index ->
@@ -328,8 +390,34 @@ fun ErrorMessage(message: String) {
 }
 
 @Composable
-fun CustomBottomBar() {
+fun CustomBottomBar(locationText: MutableState<String>) {
     val isDarkTheme = isSystemInDarkTheme()
+    val context = LocalContext.current
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    val geocoder = Geocoder(context, Locale("es"))
+
+    // Función para obtener la ubicación actual
+    fun updateLocation() {
+        try {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                    if (!addresses.isNullOrEmpty()) {
+                        val address = addresses[0]
+                        locationText.value = address.getAddressLine(0)
+                    } else {
+                        locationText.value = "Ubicación no disponible"
+                    }
+                } else {
+                    locationText.value = "Ubicación no disponible"
+                }
+            }.addOnFailureListener { exception ->
+                locationText.value = "Error obteniendo la ubicación: ${exception.message}"
+            }
+        } catch (e: SecurityException) {
+            locationText.value = "No se tienen los permisos necesarios para obtener la ubicación"
+        }
+    }
     BottomAppBar(
         modifier = Modifier
             .shadow(elevation = 10.dp)
@@ -365,20 +453,17 @@ fun CustomBottomBar() {
                         .fillMaxSize(), // Hace que el Box ocupe todo el espacio de la columna
                     contentAlignment = Alignment.Center // Centra la imagen dentro del Box
                 ) {
+                    IconButton(onClick = { updateLocation() }) {
+
                     Image(
                         painter = painterResource(id = R.drawable.located),
                         contentDescription = null,
                         colorFilter = if (isDarkTheme) ColorFilter.tint(Color.LightGray) else null,
                         modifier = Modifier
                             .size(80.dp) // Tamaño personalizado para la imagen centrada
-                    )
+                    )}
                 }
             }
         }
     }
 }
-
-//enviar parametros a la vista ticketScreen
-//lector NFC crear codigo que busque una consulta al campo que tenga el valor de uidTag vacio "" actualizando con el valor del uidTag conseguido
-//que el valor no pueda ser mayor al monto y que el monto sea uistate osea cada vez que aumenta el valor disminuya creando asi una concordancia con el pago
-//contemplar entre payments y reloads

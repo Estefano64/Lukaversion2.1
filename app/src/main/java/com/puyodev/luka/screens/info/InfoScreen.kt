@@ -13,18 +13,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.location.LocationServices
 import com.puyodev.luka.R
 import com.puyodev.luka.screens.drawer.DrawerHeader
 import com.puyodev.luka.screens.drawer.DrawerScreen
 import com.puyodev.luka.common.composable.ActionToolbar
 import com.puyodev.luka.common.ext.toolbarActions
 import com.puyodev.luka.model.User
+import com.puyodev.luka.screens.pay.openGoogleMapsWithCurrentLocation
 import kotlinx.coroutines.launch
 
 @Composable
@@ -51,7 +54,8 @@ fun InfoScreenContent(
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-
+    val context = LocalContext.current
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -70,6 +74,7 @@ fun InfoScreenContent(
                 ActionToolbar(
                     title = "Acerca de Luka",
                     modifier = Modifier.toolbarActions(),
+                    startAction = { openGoogleMapsWithCurrentLocation(fusedLocationClient, context) },
                     endAction = { onProfileClick(openScreen) },
                     containerColor = MaterialTheme.colorScheme.primaryContainer, // Fondo de la barra
                     contentColor = MaterialTheme.colorScheme.inversePrimary, // Color de texto e iconos

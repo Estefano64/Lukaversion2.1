@@ -34,10 +34,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.gms.location.LocationServices
 import com.google.firebase.Timestamp
 import com.puyodev.luka.R
 import com.puyodev.luka.common.ext.hasCreatedDateTime
 import com.puyodev.luka.model.Operation
+import com.puyodev.luka.screens.pay.openGoogleMapsWithCurrentLocation
 import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -72,6 +74,9 @@ fun OperationDetailsScreenContent(
     onShareClick: () -> Unit,
     openScreen: (String) -> Unit
 ) {
+
+    val context = LocalContext.current
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     Column(
         modifier = Modifier
             .background(
@@ -112,7 +117,7 @@ fun OperationDetailsScreenContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center // Centra el Box en la pantalla
                 ) {
-                    Text(text = formatTimestamp(operation.completedTimestamp))
+                    Text(text = formatTimestamp(operation.completedTimestamp), color = Color.DarkGray)
 
                 }
                 Row(
@@ -131,7 +136,7 @@ fun OperationDetailsScreenContent(
                             modifier = Modifier
                                 .size(160.dp) // Tamaño personalizado para la imagen centrada
                         )
-                        Text(text = "Bus 101")
+                        Text(text = "Bus 101", color = Color.DarkGray)
                     }
                     Column(
                         modifier = Modifier.padding(10.dp),
@@ -147,7 +152,8 @@ fun OperationDetailsScreenContent(
                         ) {
                             Text(
                                 text = "Pago:\nS/${operation.mount}",
-                                textAlign = TextAlign.Center
+                                textAlign = TextAlign.Center,
+                                color = Color.DarkGray
                             )
                         }
                         HorizontalDivider(modifier = Modifier.fillMaxWidth())
@@ -161,7 +167,7 @@ fun OperationDetailsScreenContent(
                             Text(
                                 text = "Paradero:\n${operation.busStop}",
                                 textAlign = TextAlign.Center,
-                                fontSize = 15.sp
+                                fontSize = 15.sp, color = Color.DarkGray
                             )
                         }
                     }
@@ -210,7 +216,7 @@ fun OperationDetailsScreenContent(
                 )
             }
             SmallFloatingActionButton(
-                onClick = { onPayScreenClick(openScreen) },
+                onClick = { openGoogleMapsWithCurrentLocation(fusedLocationClient, context) },
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 contentColor = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.shadow(
@@ -223,7 +229,7 @@ fun OperationDetailsScreenContent(
                     modifier = Modifier
                         .size(60.dp)
                         .padding(10.dp),
-                    contentDescription = "" // Add a valid content description
+                    contentDescription = "Obtener ubicacion actual"
                 )
             }
         }

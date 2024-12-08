@@ -21,6 +21,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.*
@@ -46,6 +47,7 @@ fun ActionToolbar(
   modifier: Modifier,
   containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
   contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+  startAction: () -> Unit,
   endAction: () -> Unit,
   onMenuClick: () -> Unit
 ) {
@@ -65,8 +67,8 @@ fun ActionToolbar(
     //title = { Text(stringResource(title)) },
     title = { Text(title) },
     actions = {
-      IconButton(onClick = { /* TODO: Search action */ }) {
-        Icon(imageVector = Icons.Default.Notifications, contentDescription = "Ver notificaciones")
+      IconButton(onClick = startAction) {
+        Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Ver ubicacion actual")
       }
       IconButton(onClick = endAction) {
         Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Ir al Perfil")

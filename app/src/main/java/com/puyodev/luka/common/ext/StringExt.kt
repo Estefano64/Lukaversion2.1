@@ -32,5 +32,6 @@ fun String.passwordMatches(repeated: String): Boolean {
 }
 
 fun String.idFromParameter(): String {
-  return this.substring(1, this.length - 1)
+    return this // No modificamos nada
+//return this.substring(1, this.length - 1)
 }
