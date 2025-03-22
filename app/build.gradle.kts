@@ -145,6 +145,8 @@ dependencies {
     implementation ("com.paypal.android:card-payments:1.1.0")
     implementation("com.paypal.android:payment-buttons:1.1.0")
 
+    // Agregar dependencia para Google Sign-In
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
 
     // Agregar la dependencia de Cardinal Commerce
 //    implementation("org.jfrog.cardinalcommerce.gradle:cardinalmobilesdk:2.2.7-5")

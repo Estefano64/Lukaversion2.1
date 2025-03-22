@@ -11,6 +11,7 @@ const val TICKET_SCREEN = "TicketScreen"
 const val OPERATIONS_SCREEN = "OperationsScreen"
 //const val OPERATIONS_SCREEN = "OperationsScreen"
 const val PAYPAL_SCREEN = "paypal_screen"
+const val PHONE_AUTH_SCREEN = "PhoneAuthScreen"
 
 const val INFO_SCREEN = "InfoScreen"
 const val OPERATION_DETAILS_SCREEN = "OperationDetailsScreen"
