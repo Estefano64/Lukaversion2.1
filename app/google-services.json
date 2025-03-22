@@ -12,7 +12,20 @@
           "package_name": "com.puyodev.luka"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "53758384768-44r1f83lc6c4ormnshrebjglrsh1j7lc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.puyodev.luka",
+            "certificate_hash": "ae8526717fb09614a7d33d544357dc7cf1ea9ea5"
+          }
+        },
+        {
+          "client_id": "53758384768-lrojnplmbg8p0jv5vaq3a2e2vsuhv9lo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCO5GMMypc6x_COd4Ejp9eXMWidEbU-lzA"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "53758384768-lrojnplmbg8p0jv5vaq3a2e2vsuhv9lo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

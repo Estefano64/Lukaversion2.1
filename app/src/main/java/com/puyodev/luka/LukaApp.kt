@@ -44,6 +44,7 @@ import com.puyodev.luka.ui.theme.LukaTheme
 //import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.MutableState
+import com.puyodev.luka.screens.phone.PhoneAuthScreen
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -134,6 +135,10 @@ fun NavGraphBuilder.lukaGraph(appState: LukaAppState) {
 */
     composable(LOGIN_SCREEN) {
         LoginScreen(openAndPopUp = { route, popUp -> appState.navigateAndPopUp(route, popUp) })
+    }
+
+    composable(PHONE_AUTH_SCREEN) {
+        PhoneAuthScreen(openAndPopUp = { route, popUp -> appState.navigateAndPopUp(route, popUp) })
     }
 
     composable(

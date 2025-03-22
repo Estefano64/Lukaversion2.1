@@ -12,10 +12,17 @@ import com.puyodev.luka.model.service.LogService
 import com.puyodev.luka.screens.LukaViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import android.content.Intent
+import android.content.IntentSender
+import com.puyodev.luka.di.GoogleAuthHelper
+import com.puyodev.luka.model.service.ConfigurationService
+import com.puyodev.luka.PHONE_AUTH_SCREEN
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
   private val accountService: AccountService,
+  private val configurationService: ConfigurationService,
+  private val googleAuthHelper: GoogleAuthHelper,
   logService: LogService
 ) : LukaViewModel(logService) {
   var uiState = mutableStateOf(LoginUiState())
@@ -65,7 +72,44 @@ class LoginViewModel @Inject constructor(
   }
 
   fun onCreateAccountClick(openAndPopUp: (String, String) -> Unit) {
-      // Si es exitoso, navega a SignUpScreen y elimina LoginScreen de la pila
+    // Si es exitoso, navega a SignUpScreen y elimina LoginScreen de la pila
     openAndPopUp(SIGNUP_SCREEN, LOGIN_SCREEN)
+  }
+
+  fun onPhoneAuthClick(openAndPopUp: (String, String) -> Unit) {
+    // Navegar a la pantalla de autenticación por teléfono
+    openAndPopUp(PHONE_AUTH_SCREEN, LOGIN_SCREEN)
+  }
+
+  // Nueva función para iniciar el proceso de Google Sign-In
+  suspend fun startGoogleSignIn(): IntentSender? {
+    return try {
+      googleAuthHelper.signIn()
+    } catch (e: Exception) {
+      SnackbarManager.showMessage(AppText.generic_error)
+      null
+    }
+  }
+
+  // Nueva función para procesar el resultado del intent de Google Sign-In
+  fun handleGoogleSignInResult(intent: Intent?, openAndPopUp: (String, String) -> Unit) {
+    if (intent == null) {
+      SnackbarManager.showMessage(AppText.generic_error)
+      return
+    }
+
+    launchCatching {
+      val idToken = googleAuthHelper.getGoogleIdToken(intent)
+      if (idToken != null) {
+        val success = accountService.signInWithGoogle(idToken)
+        if (success) {
+          openAndPopUp(PAY_SCREEN, LOGIN_SCREEN)
+        } else {
+          throw Exception("Error en la autenticación con Google")
+        }
+      } else {
+        SnackbarManager.showMessage(AppText.generic_error)
+      }
+    }
   }
 }
