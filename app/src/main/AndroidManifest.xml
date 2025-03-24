@@ -28,6 +28,14 @@
         android:theme="@style/Theme.Luka"
         tools:targetApi="31">
 
+        <!-- Meta-data para Facebook SDK -->
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
+        <meta-data
+            android:name="com.facebook.sdk.ClientToken"
+            android:value="@string/facebook_client_token" />
+
         <!-- Actividad principal -->
         <activity
             android:enableOnBackInvokedCallback="true"
@@ -65,7 +73,6 @@
                 android:name="com.google.android.gms.version"
                 android:value="@integer/google_play_services_version" />
 
-
             <!-- Añadido: Intent filter para PayPal return URL -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
@@ -75,6 +82,32 @@
                     android:scheme="com.puyodev.luka"
                     android:host="paypalpay"
                     android:pathPattern="/.*" />  <!-- Add this to handle all possible return paths -->
+            </intent-filter>
+        </activity>
+
+        <!-- Actividad de Facebook para autenticación -->
+        <activity
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name"
+            android:exported="true" />
+        
+        <activity
+            android:name="com.facebook.CustomTabActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="@string/fb_login_protocol_scheme" />
+            </intent-filter>
+            <!-- Añadir intent-filter adicional para app-specific redirect -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.puyodev.luka" 
+                      android:host="facebook" />
             </intent-filter>
         </activity>
 

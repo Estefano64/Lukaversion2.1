@@ -145,7 +145,11 @@ dependencies {
     implementation ("com.paypal.android:card-payments:1.1.0")
     implementation("com.paypal.android:payment-buttons:1.1.0")
 
-    // Agregar dependencia para Google Sign-In
+    // Facebook SDK actualizado a la versión más reciente
+    implementation("com.facebook.android:facebook-login:16.2.0")
+    implementation("com.facebook.android:facebook-android-sdk:16.2.0")
+
+    // Dependencia para google auth
     implementation("com.google.android.gms:play-services-auth:20.7.0")
 
     // Agregar la dependencia de Cardinal Commerce

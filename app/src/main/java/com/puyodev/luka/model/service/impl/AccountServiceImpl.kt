@@ -2,6 +2,7 @@ package com.puyodev.luka.model.service.impl
 
 import com.puyodev.luka.model.service.AccountService
 import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.PhoneAuthCredential
@@ -12,11 +13,13 @@ import com.puyodev.luka.model.User
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import android.app.Activity
+import com.facebook.AccessToken
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import com.google.firebase.FirebaseException
+import androidx.activity.ComponentActivity
 
 class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, private val firestore: FirebaseFirestore) : AccountService {
 
@@ -96,12 +99,40 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, pri
           "lukitas" to 30 // Monto inicial
         )
         
-        firestore.collection("users").document(uid).set(userData).await()
+        firestore.collection("usuarios").document(uid).set(userData).await()
       }
       
       return true
     } catch (e: Exception) {
       return false
+    }
+  }
+  
+  // Implementación de la autenticación con Facebook
+  override suspend fun signInWithFacebook(token: AccessToken): Boolean {
+    return try {
+      val credential = FacebookAuthProvider.getCredential(token.token)
+      val result = auth.signInWithCredential(credential).await()
+      
+      // Verificar si es un usuario nuevo
+      val isNewUser = result.additionalUserInfo?.isNewUser ?: false
+      
+      // Si es un usuario nuevo, crear el documento en Firestore
+      if (isNewUser) {
+        val uid = result.user?.uid ?: throw Exception("Error creando usuario con Facebook")
+        val userData = hashMapOf(
+          "username" to (result.user?.displayName ?: "Usuario"),
+          "lukitas" to 30, // Monto inicial
+          "email" to result.user?.email
+        )
+        
+        firestore.collection("usuarios").document(uid).set(userData).await()
+      }
+      
+      true
+    } catch (e: Exception) {
+      android.util.Log.e("FacebookAuth", "Error en autenticación con Facebook", e)
+      false
     }
   }
   
@@ -161,7 +192,7 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, pri
           "phone" to result.user?.phoneNumber // Guardar el número de teléfono
         )
         
-        firestore.collection("users").document(uid).set(userData).await()
+        firestore.collection("usuarios").document(uid).set(userData).await()
       }
       
       true
@@ -187,4 +218,33 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, pri
         }
       }
   }
+
+  /* Este método NO puede utilizarse según TOS de Facebook
+  override suspend fun signInWithFacebookProvider(activity: ComponentActivity): Boolean {
+    return try {
+      val provider = com.google.firebase.auth.OAuthProvider.newBuilder("facebook.com").build()
+      val result = auth.startActivityForSignInWithProvider(activity, provider).await()
+      
+      // Verificar si es un usuario nuevo
+      val isNewUser = result.additionalUserInfo?.isNewUser ?: false
+      
+      // Si es un usuario nuevo, crear el documento en Firestore
+      if (isNewUser) {
+        val uid = result.user?.uid ?: throw Exception("Error creando usuario con Facebook")
+        val userData = hashMapOf(
+          "username" to (result.user?.displayName ?: "Usuario"),
+          "lukitas" to 30, // Monto inicial
+          "email" to result.user?.email
+        )
+        
+        firestore.collection("usuarios").document(uid).set(userData).await()
+      }
+      
+      true
+    } catch (e: Exception) {
+      android.util.Log.e("FacebookAuth", "Error en autenticación con Facebook Provider", e)
+      false
+    }
+  }
+  */
 }

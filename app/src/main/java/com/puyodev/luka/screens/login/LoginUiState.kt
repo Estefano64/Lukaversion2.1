@@ -13,10 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-
 package com.puyodev.luka.screens.login
 
 data class LoginUiState(
-    val email: String = "frisk7530@gmail.com",
-    val password: String = "Alaska7530"
+    val email: String = "",
+    val password: String = ""
 )
