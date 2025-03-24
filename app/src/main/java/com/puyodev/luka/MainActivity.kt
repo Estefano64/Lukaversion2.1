@@ -70,6 +70,20 @@ class MainActivity : ComponentActivity()/*, NfcAdapter.ReaderCallback*/ {
             LukaApp(locationText = locationText)
         }
     }
+    
+    // Añadir manejo para resultados de actividad
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        
+        // Permitir que el CallbackManager de Facebook maneje el resultado de la autenticación
+        val callbackManager = com.facebook.CallbackManager.Factory.create()
+        if (callbackManager.onActivityResult(requestCode, resultCode, data)) {
+            return
+        }
+        
+        Log.d("MainActivity", "onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
+    }
+
     override fun onDestroy() {
         // Remove the lifecycle observer before destroying the activity
         lifecycle.removeObserver(paymentLifecycleObserver)

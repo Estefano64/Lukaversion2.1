@@ -14,9 +14,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import android.content.Intent
 import android.content.IntentSender
+import androidx.activity.ComponentActivity
+import com.google.firebase.auth.OAuthProvider
 import com.puyodev.luka.di.GoogleAuthHelper
 import com.puyodev.luka.model.service.ConfigurationService
 import com.puyodev.luka.PHONE_AUTH_SCREEN
+import kotlinx.coroutines.tasks.await
+import com.facebook.AccessToken
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -107,6 +111,26 @@ class LoginViewModel @Inject constructor(
         } else {
           throw Exception("Error en la autenticación con Google")
         }
+      } else {
+        SnackbarManager.showMessage(AppText.generic_error)
+      }
+    }
+  }
+  
+  // Método para manejar la autenticación con Facebook
+  fun handleFacebookSignInResult(token: AccessToken?, openAndPopUp: (String, String) -> Unit) {
+    if (token == null) {
+      SnackbarManager.showMessage(AppText.generic_error)
+      return
+    }
+    
+    launchCatching {
+      // Mostrar un mensaje de carga
+      SnackbarManager.showMessage(AppText.loading_message)
+      
+      val success = accountService.signInWithFacebook(token)
+      if (success) {
+        openAndPopUp(PAY_SCREEN, LOGIN_SCREEN)
       } else {
         SnackbarManager.showMessage(AppText.generic_error)
       }

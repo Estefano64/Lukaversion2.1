@@ -32,9 +32,16 @@ interface AccountService {
   suspend fun signOut()
   suspend fun signInWithGoogle(idToken: String): Boolean
   
+  // Método para iniciar sesión con Facebook usando el SDK de Facebook
+  suspend fun signInWithFacebook(token: com.facebook.AccessToken): Boolean
+  
   // Método para enviar el código de verificación al teléfono
   suspend fun sendPhoneVerification(phoneNumber: String, activity: android.app.Activity, callback: (String?, Exception?) -> Unit)
   
   // Método para verificar el código enviado al teléfono
   suspend fun verifyPhoneCode(verificationId: String, code: String): Boolean
+  
+  // Método simplificado que usa Firebase directamente
+  // Este método NO puede utilizarse según TOS de Facebook
+  // suspend fun signInWithFacebookProvider(activity: androidx.activity.ComponentActivity): Boolean
 }
