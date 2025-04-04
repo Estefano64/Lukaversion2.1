@@ -111,11 +111,23 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, pri
   // Implementación de la autenticación con Facebook
   override suspend fun signInWithFacebook(token: AccessToken): Boolean {
     return try {
+      android.util.Log.d("FacebookAuth", "Iniciando autenticación con Firebase. Token: ${token.token}")
+      android.util.Log.d("FacebookAuth", "Permisos concedidos: ${token.permissions}")
+      android.util.Log.d("FacebookAuth", "ID de aplicación: ${token.applicationId}")
+      android.util.Log.d("FacebookAuth", "ID de usuario: ${token.userId}")
+      
+      // Verificar si tenemos los permisos mínimos necesarios
+      if (!token.permissions.contains("public_profile") || !token.permissions.contains("email")) {
+        android.util.Log.e("FacebookAuth", "Faltan permisos necesarios: public_profile y/o email")
+        return false
+      }
+      
       val credential = FacebookAuthProvider.getCredential(token.token)
       val result = auth.signInWithCredential(credential).await()
       
       // Verificar si es un usuario nuevo
       val isNewUser = result.additionalUserInfo?.isNewUser ?: false
+      android.util.Log.d("FacebookAuth", "Autenticación exitosa. Nuevo usuario: $isNewUser")
       
       // Si es un usuario nuevo, crear el documento en Firestore
       if (isNewUser) {
@@ -123,15 +135,33 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth, pri
         val userData = hashMapOf(
           "username" to (result.user?.displayName ?: "Usuario"),
           "lukitas" to 30, // Monto inicial
-          "email" to result.user?.email
+          "email" to result.user?.email,
+          "authProvider" to "facebook"
         )
         
         firestore.collection("usuarios").document(uid).set(userData).await()
+        android.util.Log.d("FacebookAuth", "Datos de usuario guardados en Firestore")
       }
       
       true
     } catch (e: Exception) {
-      android.util.Log.e("FacebookAuth", "Error en autenticación con Facebook", e)
+      android.util.Log.e("FacebookAuth", "Error en autenticación con Facebook: ${e.javaClass.simpleName}", e)
+      android.util.Log.e("FacebookAuth", "Mensaje de error: ${e.message}")
+      android.util.Log.e("FacebookAuth", "Causa: ${e.cause?.message}")
+      
+      // Manejo específico de errores comunes
+      when {
+        e.message?.contains("DEVELOPER_ERROR") == true -> {
+          android.util.Log.e("FacebookAuth", "Error de configuración de desarrollador. Verifica el hash de firma en la consola de Facebook")
+        }
+        e.message?.contains("API version") == true -> {
+          android.util.Log.e("FacebookAuth", "Error de versión de API. La aplicación está configurada con una versión incompatible")
+        }
+        e.message?.contains("Cannot call API") == true -> {
+          android.util.Log.e("FacebookAuth", "Error de permisos. Verifica que la aplicación esté correctamente configurada en la consola de Facebook")
+        }
+      }
+      
       false
     }
   }

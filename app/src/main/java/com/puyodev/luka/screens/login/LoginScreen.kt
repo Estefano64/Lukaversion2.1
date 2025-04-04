@@ -55,7 +55,15 @@ fun LoginScreen(
       object : FacebookCallback<LoginResult> {
         override fun onSuccess(result: LoginResult) {
           android.util.Log.d("FacebookAuth", "Login success, token: ${result.accessToken.token}")
-          viewModel.handleFacebookSignInResult(result.accessToken, openAndPopUp)
+          // Verificar que tenemos los permisos necesarios
+          val accessToken = result.accessToken
+          val deniedPermissions = accessToken.declinedPermissions
+          if (deniedPermissions.isEmpty()) {
+            viewModel.handleFacebookSignInResult(accessToken, openAndPopUp)
+          } else {
+            android.util.Log.e("FacebookAuth", "Permisos denegados: $deniedPermissions")
+            SnackbarManager.showMessage(AppText.generic_error)
+          }
         }
         
         override fun onCancel() {
@@ -120,17 +128,24 @@ fun LoginScreen(
     onFacebookSignInClick = {
       // Usar el SDK de Facebook directamente
       try {
+        android.util.Log.d("FacebookAuth", "Iniciando proceso de login con Facebook")
+        
         // Limpiar cualquier sesión anterior para evitar problemas
         LoginManager.getInstance().logOut()
+        android.util.Log.d("FacebookAuth", "Sesión anterior cerrada")
         
-        // Iniciar el proceso de login con Facebook
-        LoginManager.getInstance().logInWithReadPermissions(
+        // Iniciar el proceso de login con Facebook con permisos específicos
+        val loginManager = LoginManager.getInstance()
+        android.util.Log.d("FacebookAuth", "Solicitando permisos: public_profile, email")
+        
+        loginManager.logIn(
           context as androidx.activity.ComponentActivity,
           callbackManager,
-          listOf("email", "public_profile")
+          listOf("public_profile", "email")
         )
       } catch (e: Exception) {
-        android.util.Log.e("FacebookAuth", "Error iniciando login: ${e.message}", e)
+        android.util.Log.e("FacebookAuth", "Error iniciando login: ${e.javaClass.simpleName}", e)
+        android.util.Log.e("FacebookAuth", "Mensaje: ${e.message}")
         SnackbarManager.showMessage(AppText.generic_error)
       }
     },
