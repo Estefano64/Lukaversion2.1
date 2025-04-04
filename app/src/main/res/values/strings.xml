@@ -97,4 +97,12 @@
     </string>
 
     <string name="web_client_id">53758384768-lrojnplmbg8p0jv5vaq3a2e2vsuhv9lo.apps.googleusercontent.com</string>
+    
+    <!-- Facebook configuration -->
+    <string name="facebook_app_id">993606052317437</string>
+    <string name="facebook_client_token">ac704a8f0548577f0000822c3de441f8</string>
+    <string name="fb_login_protocol_scheme">fb993606052317437</string>
+
+    <string name="loading_message">Iniciando sesión con Facebook...</string>
+    <string name="login_canceled">Inicio de sesión cancelado</string>
 </resources>
